@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Port Scanner Tool</title>
+    <style>
+      body {
+        background-color: #1e1e1e;
+        color: white;
+        font-family: monospace;
+        padding: 20px;
+      }
+      input,
+      button {
+        padding: 8px;
+        margin: 5px 0;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+      }
+      #results {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Port Scanner Tool</h1>
+    <form id="scanForm">
+      <label>Target IP / Hostname:</label><br />
+      <input type="text" id="target" value="127.0.0.1" /><br />
+      <label>Start Port:</label><br />
+      <input type="number" id="start_port" value="1" /><br />
+      <label>End Port:</label><br />
+      <input type="number" id="end_port" value="100" /><br />
+      <button type="submit">Scan</button>
+    </form>
+
+    <div id="results"></div>
+
+    <script>
+      const form = document.getElementById("scanForm");
+      const resultsDiv = document.getElementById("results");
+
+      form.onsubmit = async function (e) {
+        e.preventDefault();
+        resultsDiv.innerHTML = "Scanning...<br>";
+
+        const target = document.getElementById("target").value;
+        const start_port = document.getElementById("start_port").value;
+        const end_port = document.getElementById("end_port").value;
+
+        const response = await fetch("/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ target, start_port, end_port }),
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          resultsDiv.innerHTML += decoder.decode(value);
+        }
+      };
+    </script>
+  </body>
+</html>
